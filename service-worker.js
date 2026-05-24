@@ -1,7 +1,8 @@
-const CACHE_NAME = 'wordoir-cache-v1';
+const CACHE_NAME = 'wordoir-cache-v3';
 const FILES_TO_CACHE = [
   'index.html',
   'game.html',
+  'tiletris.html',
   'indexF.html',
   'gameF.html',
   'about.html',

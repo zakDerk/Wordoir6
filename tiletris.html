@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tiletris</title>
+  <style>
+    :root {
+      --bg:#0d1114; --panel:#151b20; --grid:#28313a; --tile:#f1f4ec; --ink:#111;
+      --accent:#5fbf8f; --warn:#d95b5b; --gold:#d8b84f; --text:#f7f8f4; --muted:#9ba6ae;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; height:100dvh; overflow:hidden; background:radial-gradient(circle at top,#1c2d34 0,#0d1114 42%); color:var(--text); font-family:Arial, Helvetica, sans-serif; display:flex; flex-direction:column; align-items:center; }
+    .topbar { width:min(560px,100%); min-height:44px; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid #26313a; }
+    .topbar a { color:var(--text); text-decoration:none; font-weight:700; }
+    .title { font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+    main { width:min(560px,96vw); flex:1; min-height:0; padding:8px 0 126px; display:flex; flex-direction:column; align-items:center; }
+    .hud { width:min(420px,92vw,42dvh); display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; color:var(--muted); font-weight:700; }
+    .score { color:var(--gold); }
+    .message { width:min(420px,92vw,42dvh); min-height:28px; display:flex; align-items:center; justify-content:center; font-weight:800; color:#121212; margin-bottom:6px; opacity:0; transition:opacity .18s ease; }
+    .message.show { opacity:1; background:#f2f2f2; border-radius:8px; padding:5px 8px; }
+    .board { width:min(420px,92vw,42dvh); display:grid; grid-template-rows:repeat(7,1fr); gap:4px; background:var(--panel); border:1px solid #2b3842; padding:7px; border-radius:10px; }
+    .row { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; }
+    .cell { aspect-ratio:1/1; border:2px solid var(--grid); background:#2c343b; display:flex; align-items:center; justify-content:center; font-size:clamp(1.25rem,5.7vw,1.8rem); line-height:1; font-weight:900; color:var(--ink); text-transform:uppercase; transform-style:preserve-3d; }
+    .input-row .cell { border-color:var(--accent); background:#101b17; color:var(--text); }
+    .tile { background:var(--tile); border-color:#d9dfd5; }
+    .falling { background:#dcefff; border-color:#89b9e3; }
+    .clear { animation:flipClear .45s ease forwards; }
+    .shake { animation:shake .32s ease; }
+    .over { border-color:var(--warn); }
+    .controls { position:fixed; left:0; right:0; bottom:0; display:flex; justify-content:center; background:#0b0f12; border-top:1px solid #25313a; padding:6px 3px calc(6px + env(safe-area-inset-bottom)); }
+    .kb { width:min(560px,100%); display:grid; gap:3px; padding-inline:3px; }
+    .kb-row { display:grid; gap:3px; }
+    .kb-row.r1 { grid-template-columns:repeat(10,minmax(0,1fr)); }
+    .kb-row.r2 { grid-template-columns:repeat(9,minmax(0,1fr)); padding:0 10px; }
+    .kb-row.r3 { grid-template-columns:1.25fr repeat(7,minmax(0,1fr)) 1.25fr; }
+    button { border:0; border-radius:6px; min-height:36px; background:#7d888f; color:#fff; font-weight:900; cursor:pointer; }
+    .wide { font-size:.78rem; }
+    .leader-button { justify-self:end; min-height:34px; padding:0 10px; background:#263642; color:var(--text); }
+    .leaderboard-modal { position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center; padding:18px; background:rgba(0,0,0,.55); }
+    .leaderboard-modal.hidden { display:none; }
+    .gameover-modal { position:fixed; inset:0; z-index:24; display:flex; align-items:center; justify-content:center; padding:18px; background:rgba(0,0,0,.62); }
+    .gameover-modal.hidden { display:none; }
+    .gameover-card { width:min(420px,92vw); background:rgba(21,27,32,.98); border:1px solid var(--warn); border-radius:10px; padding:16px; box-shadow:0 18px 60px rgba(0,0,0,.45); text-align:center; display:grid; gap:9px; }
+    .gameover-title { color:var(--warn); font-size:1.25rem; font-weight:900; text-transform:uppercase; }
+    .gameover-score { color:var(--text); font-weight:900; }
+    .gameover-next { color:var(--muted); font-weight:800; }
+    .leaderboard { width:min(420px,92vw); background:rgba(21,27,32,.98); border:1px solid #2b3842; border-radius:10px; padding:14px 16px; box-shadow:0 18px 60px rgba(0,0,0,.4); }
+    .leaderboard-title { display:flex; justify-content:space-between; color:var(--muted); font-weight:900; font-size:.78rem; letter-spacing:.04em; text-transform:uppercase; }
+    .leaderboard ol { list-style:none; padding:0; margin:10px 0 0; display:grid; gap:6px; }
+    .leaderboard li { display:flex; justify-content:space-between; color:var(--text); font-size:.95rem; }
+    .close-leaderboard { margin-top:12px; width:100%; background:#4f6fa9; }
+    .locked { opacity:.45; pointer-events:none; }
+    .game-over-tile { background:#b74343; border-color:#e36b6b; color:#fff; }
+    @keyframes flipClear { 0% { transform:rotateX(0); opacity:1; } 100% { transform:rotateX(90deg); opacity:0; } }
+    @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-8px); } 75% { transform:translateX(8px); } }
+    @media (max-width:560px) {
+      main { width:96vw; padding-top:6px; padding-bottom:118px; }
+      .hud, .message, .board { width:min(94vw,40dvh); }
+      .board { gap:3px; padding:6px; }
+      .row { gap:3px; }
+      .cell { font-size:clamp(1.15rem,5.5vw,1.5rem); }
+      button { min-height:34px; font-size:.84rem; }
+      .wide { font-size:.62rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a href="game.html">Wordoir</a>
+    <div class="title">Tiletris</div>
+    <button class="leader-button" id="leaderBtn">Scores</button>
+  </header>
+  <main>
+    <div class="hud">
+      <span id="periodInfo">Live</span>
+      <span class="score">Score: <strong id="score">0</strong></span>
+    </div>
+    <div id="message" class="message" aria-live="polite"></div>
+    <section id="board" class="board"></section>
+    <div id="leaderModal" class="leaderboard-modal hidden">
+      <section class="leaderboard">
+      <div class="leaderboard-title"><span>Leaderboard</span><span>Local</span></div>
+      <ol id="leaderboard"></ol>
+        <button class="close-leaderboard" id="closeLeaderBtn">Close</button>
+      </section>
+    </div>
+    <div id="gameOverModal" class="gameover-modal hidden" aria-live="polite">
+      <section class="gameover-card">
+        <div class="gameover-title">Game over</div>
+        <div class="gameover-score">Your score is <span id="finalScore">0</span>.</div>
+        <div class="gameover-next">Next game is in <span id="nextGameTime">0m</span>.</div>
+      </section>
+    </div>
+  </main>
+  <div class="controls">
+    <div id="keyboard" class="kb"></div>
+  </div>
+  <script src="valid-guesses.js"></script>
+  <script>
+    const ROWS = 7;
+    const COLS = 5;
+    const FALL_MS = 105;
+    const GRAVITY_MS = 70;
+    const STORAGE_KEY = 'tiletrisActiveRunV1';
+    const LEADERBOARD_KEY = 'tiletrisLeaderboardV1';
+    const LOCK_PREFIX = 'tiletrisLostPeriodV1:';
+    const GAME_TIME_ZONE = 'America/New_York';
+    const shortWords = new Set([
+      'a','i','am','an','as','at','be','by','do','go','he','if','in','is','it','me','my','no','of','on','or','ox','so','to','up','us','we',
+      'add','age','air','and','ant','any','ape','are','arm','art','ash','ask','bad','bag','bar','bat','bed','bee','big','bit','box','boy','bus','but','can','car','cat','cow','cup','day','did','dog','dry','ear','eat','egg','end','far','fat','few','fit','fly','for','fox','fun','get','got','had','has','hat','her','him','his','hot','how','ice','ill','ink','its','jam','job','joy','key','leg','let','lie','log','lot','low','man','map','men','new','not','now','odd','off','old','one','our','out','own','pen','pet','pie','pig','pin','red','run','sad','say','sea','see','set','she','sit','sky','son','sun','tea','the','tie','too','top','toy','try','two','use','war','was','way','who','why','win','yes','yet','you',
+      'able','also','area','away','back','ball','band','bank','base','bear','beat','been','best','bird','blue','boat','body','book','both','call','came','card','care','case','city','club','cold','come','cost','dark','data','dead','deal','deep','does','done','door','down','draw','drop','each','east','easy','even','ever','face','fact','fall','farm','fast','feel','felt','file','fill','find','fine','fire','five','food','foot','form','four','free','from','full','game','gave','girl','give','goes','gold','gone','good','gray','grew','grow','half','hand','hard','have','head','hear','heat','held','help','here','high','hold','home','hope','hour','idea','into','jump','just','keep','kind','king','knew','know','land','last','late','lead','left','less','life','like','line','list','live','long','look','made','make','many','mark','mean','mind','miss','more','most','move','much','must','name','near','need','next','nice','note','once','only','open','over','page','part','pass','past','pick','plan','play','poor','pull','push','read','real','rest','rich','ride','road','rock','room','rule','same','save','saw','says','seat','seem','seen','self','send','ship','shop','show','side','sing','site','slow','small','snow','some','song','soon','sort','star','stay','step','stop','such','sure','take','talk','team','tell','than','that','them','then','they','thin','this','time','told','took','town','tree','true','turn','type','unit','upon','very','view','wait','walk','wall','want','warm','week','well','went','were','west','what','when','wide','wife','wild','will','wind','wire','with','word','work','yard','year','your'
+    ]);
+    const validWords = new Set([...shortWords, ...(window.WORDLE_ALLOWED_GUESSES || [])]);
+    const boardEl = document.getElementById('board');
+    const messageEl = document.getElementById('message');
+    const scoreEl = document.getElementById('score');
+    const leaderboardEl = document.getElementById('leaderboard');
+    const leaderModalEl = document.getElementById('leaderModal');
+    const gameOverModalEl = document.getElementById('gameOverModal');
+    const finalScoreEl = document.getElementById('finalScore');
+    const nextGameTimeEl = document.getElementById('nextGameTime');
+    const periodInfoEl = document.getElementById('periodInfo');
+    let board, input, score, usedWords, busy, gameOver, runPeriodId, messageTimer;
+
+    function emptyBoard() {
+      return Array.from({ length: ROWS }, () => Array.from({ length: COLS }, () => null));
+    }
+    function newYorkParts(date) {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: GAME_TIME_ZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23'
+      }).formatToParts(date);
+      return Object.fromEntries(parts.filter(part => part.type !== 'literal').map(part => [part.type, part.value]));
+    }
+    function currentPeriodId(date = new Date()) {
+      const parts = newYorkParts(date);
+      return parts.year + '-' + parts.month + '-' + parts.day + '-' + (Number(parts.hour) >= 12 ? 'pm' : 'am');
+    }
+    function nextPeriodTime() {
+      const start = currentPeriodId();
+      let low = Date.now();
+      let high = low + 13 * 60 * 60 * 1000;
+      while (high - low > 1000) {
+        const mid = Math.floor((low + high) / 2);
+        if (currentPeriodId(new Date(mid)) === start) low = mid;
+        else high = mid;
+      }
+      return high;
+    }
+    function formatDuration(ms) {
+      const minutesTotal = Math.max(0, Math.ceil(ms / 60000));
+      const hours = Math.floor(minutesTotal / 60);
+      const minutes = minutesTotal % 60;
+      return hours ? hours + 'h ' + minutes + 'm' : minutes + 'm';
+    }
+    function isPeriodLocked(periodId = currentPeriodId()) {
+      return localStorage.getItem(LOCK_PREFIX + periodId) === '1';
+    }
+    function saveRun() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        board, input, score, usedWords: [...usedWords], gameOver, runPeriodId
+      }));
+    }
+    function loadRun() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+        if (!saved || !Array.isArray(saved.board)) return false;
+        board = saved.board;
+        input = saved.input || [];
+        score = saved.score || 0;
+        usedWords = new Set(saved.usedWords || []);
+        gameOver = !!saved.gameOver;
+        runPeriodId = saved.runPeriodId || currentPeriodId();
+        busy = false;
+        if (gameOver) boardEl.classList.add('over');
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    function saveScore() {
+      const scores = getLeaderboard();
+      scores.push({ score, date: new Date().toISOString() });
+      scores.sort((a, b) => b.score - a.score);
+      localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(scores.slice(0, 10)));
+    }
+    function getLeaderboard() {
+      try {
+        return JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || '[]');
+      } catch {
+        return [];
+      }
+    }
+    function renderLeaderboard() {
+      const scores = getLeaderboard();
+      leaderboardEl.innerHTML = '';
+      if (!scores.length) {
+        const item = document.createElement('li');
+        item.innerHTML = '<span>No scores yet</span><span>-</span>';
+        leaderboardEl.appendChild(item);
+        return;
+      }
+      scores.slice(0, 5).forEach((entry, index) => {
+        const item = document.createElement('li');
+        item.innerHTML = '<span>#' + (index + 1) + '</span><span>' + entry.score + '</span>';
+        leaderboardEl.appendChild(item);
+      });
+    }
+    function updatePeriodInfo() {
+      if (gameOver && isPeriodLocked()) {
+        periodInfoEl.textContent = 'Next game in ' + formatDuration(nextPeriodTime() - Date.now());
+      } else {
+        periodInfoEl.textContent = 'Live';
+      }
+      if (gameOver) updateGameOverModal();
+    }
+    function showMessage(text) {
+      messageEl.textContent = text;
+      messageEl.classList.add('show');
+      clearTimeout(messageTimer);
+      messageTimer = setTimeout(() => messageEl.classList.remove('show'), 1500);
+    }
+    function render(falling = null, clearSet = new Set()) {
+      const fallingCells = Array.isArray(falling) ? falling : (falling ? [falling] : []);
+      boardEl.innerHTML = '';
+      for (let row = 0; row < ROWS; row++) {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'row' + (row === 0 ? ' input-row' : '');
+        for (let col = 0; col < COLS; col++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          let tile = board[row][col];
+          if (!gameOver && row === 0 && input[col]) tile = { letter: input[col], state: 'input' };
+          const fallingTile = fallingCells.find(cell => cell.row === row && cell.col === col);
+          if (fallingTile) tile = { letter: fallingTile.letter, state: 'falling' };
+          if (tile) {
+            cell.textContent = tile.letter;
+            cell.classList.add(tile.state === 'falling' ? 'falling' : 'tile');
+            if (gameOver) cell.classList.add('game-over-tile');
+          }
+          if (clearSet.has(row + ':' + col)) cell.classList.add('clear');
+          rowEl.appendChild(cell);
+        }
+        boardEl.appendChild(rowEl);
+      }
+      scoreEl.textContent = score;
+      updatePeriodInfo();
+      updateGameOverModal();
+      renderLeaderboard();
+    }
+    function validWord(word) {
+      return /^[a-z]{1,5}$/.test(word) && validWords.has(word);
+    }
+    function addLetter(letter) {
+      if (busy || gameOver) return;
+      if (input.length < COLS) {
+        input.push(letter);
+        render();
+        saveRun();
+      }
+    }
+    function backspace() {
+      if (busy || gameOver) return;
+      input.pop();
+      render();
+      saveRun();
+    }
+    async function submit() {
+      if (busy || gameOver) return;
+      const word = input.join('').toLowerCase();
+      if (!word) return showMessage('Type a word.');
+      if (!validWord(word)) return showMessage('Not a word.');
+      if (usedWords.has(word)) return showMessage('Already used.');
+      const letters = Array.from({ length: COLS }, (_, col) => input[col] || '');
+      if (!canEnter(letters)) return endGame();
+      busy = true;
+      usedWords.add(word);
+      input = [];
+      const landedCells = await dropLetters(letters);
+      render();
+      await clearMatches(landedCells);
+      if (hasReachedTop()) return endGame();
+      busy = false;
+      render();
+      saveRun();
+    }
+    function canEnter(letters) {
+      return letters.every((letter, col) => !letter || !board[1][col]);
+    }
+    async function dropLetters(letters) {
+      let cells = letters.map((letter, col) => letter ? { letter, col, row: 1 } : null).filter(Boolean);
+      while (true) {
+        renderFloating(cells);
+        await wait(FALL_MS);
+        const nextCells = cells.map(cell => {
+          if (cell.row + 1 >= ROWS || board[cell.row + 1][cell.col]) return cell;
+          return { ...cell, row: cell.row + 1 };
+        });
+        const moved = nextCells.some((cell, index) => cell.row !== cells[index].row);
+        cells = nextCells;
+        if (!moved) break;
+      }
+      cells.forEach(cell => {
+        board[cell.row][cell.col] = { letter: cell.letter, state: 'idle' };
+      });
+      return cells;
+    }
+    function renderFloating(cells) {
+      render(cells);
+    }
+    async function clearMatches(landedCells) {
+      const clearSet = new Set();
+      for (const cell of landedCells) {
+        for (let row = cell.row + 1; row < ROWS; row++) {
+          const col = cell.col;
+          if (!board[row][col]) continue;
+          if (board[row][col].letter === cell.letter) {
+            clearSet.add(cell.row + ':' + col);
+            clearSet.add(row + ':' + col);
+          }
+          break;
+        }
+      }
+      if (!clearSet.size) return;
+      render(null, clearSet);
+      await wait(460);
+      clearSet.forEach(key => {
+        const [row, col] = key.split(':').map(Number);
+        board[row][col] = null;
+      });
+      const pairs = clearSet.size / 2;
+      score += pairs === 1 ? 10 : pairs === 2 ? 25 : pairs * 15;
+      await applyGravity();
+      showMessage('+' + (pairs === 1 ? 10 : pairs === 2 ? 25 : pairs * 15));
+      saveRun();
+    }
+    function hasReachedTop() {
+      return board[1].some(Boolean);
+    }
+    async function applyGravity() {
+      let moved = true;
+      while (moved) {
+        moved = false;
+        for (let row = ROWS - 2; row >= 1; row--) {
+          for (let col = 0; col < COLS; col++) {
+            if (board[row][col] && !board[row + 1][col]) {
+              board[row + 1][col] = board[row][col];
+              board[row][col] = null;
+              moved = true;
+            }
+          }
+        }
+        if (moved) {
+          render();
+          await wait(GRAVITY_MS);
+        }
+      }
+    }
+    function endGame() {
+      if (gameOver) return;
+      gameOver = true;
+      busy = false;
+      const currentPeriod = currentPeriodId();
+      const carriedIntoNewPeriod = currentPeriod !== runPeriodId;
+      if (!carriedIntoNewPeriod) localStorage.setItem(LOCK_PREFIX + currentPeriod, '1');
+      saveScore();
+      saveRun();
+      boardEl.classList.add('shake', 'over');
+      render();
+      if (carriedIntoNewPeriod) setTimeout(startNewRun, 1600);
+    }
+    function updateGameOverModal() {
+      if (!gameOver) {
+        gameOverModalEl.classList.add('hidden');
+        return;
+      }
+      finalScoreEl.textContent = score;
+      nextGameTimeEl.textContent = formatDuration(nextPeriodTime() - Date.now());
+      gameOverModalEl.classList.remove('hidden');
+    }
+    function wait(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    function startNewRun() {
+      board = emptyBoard();
+      input = [];
+      score = 0;
+      usedWords = new Set();
+      busy = false;
+      gameOver = false;
+      runPeriodId = currentPeriodId();
+      boardEl.classList.remove('shake', 'over');
+      gameOverModalEl.classList.add('hidden');
+      render();
+      saveRun();
+    }
+    function startGame() {
+      if (isPeriodLocked()) {
+        if (loadRun() && runPeriodId !== currentPeriodId()) {
+          startNewRun();
+          return;
+        }
+        board = emptyBoard();
+        input = [];
+        score = 0;
+        usedWords = new Set();
+        busy = false;
+        gameOver = true;
+        runPeriodId = currentPeriodId();
+        boardEl.classList.add('over');
+        render();
+        return;
+      }
+      if (!loadRun() || gameOver) startNewRun();
+      else {
+        gameOverModalEl.classList.add('hidden');
+        render();
+      }
+    }
+    function buildKeyboard() {
+      const keyboard = document.getElementById('keyboard');
+      ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'].forEach((line, index) => {
+        const row = document.createElement('div');
+        row.className = 'kb-row r' + (index + 1);
+        if (index === 2) row.appendChild(button('ENT', submit, 'wide'));
+        for (const letter of line) row.appendChild(button(letter, () => addLetter(letter)));
+        if (index === 2) row.appendChild(button('DEL', backspace, 'wide'));
+        keyboard.appendChild(row);
+      });
+    }
+    function button(text, action, className = '') {
+      const btn = document.createElement('button');
+      btn.textContent = text;
+      if (className) btn.className = className;
+      btn.addEventListener('click', action);
+      return btn;
+    }
+    function openLeaderboard() {
+      renderLeaderboard();
+      leaderModalEl.classList.remove('hidden');
+    }
+    function closeLeaderboard() {
+      leaderModalEl.classList.add('hidden');
+    }
+    document.addEventListener('keydown', event => {
+      const key = event.key.toUpperCase();
+      if (event.key === 'Escape') closeLeaderboard();
+      if (/^[A-Z]$/.test(key)) { event.preventDefault(); addLetter(key); }
+      else if (event.key === 'Backspace') { event.preventDefault(); backspace(); }
+      else if (event.key === 'Enter') { event.preventDefault(); submit(); }
+    });
+    document.getElementById('leaderBtn').addEventListener('click', openLeaderboard);
+    document.getElementById('closeLeaderBtn').addEventListener('click', closeLeaderboard);
+    leaderModalEl.addEventListener('click', event => {
+      if (event.target === leaderModalEl) closeLeaderboard();
+    });
+    buildKeyboard();
+    startGame();
+    setInterval(() => {
+      if (gameOver && currentPeriodId() !== runPeriodId && !isPeriodLocked()) startNewRun();
+      else updatePeriodInfo();
+    }, 30000);
+  </script>
+</body>
+</html>

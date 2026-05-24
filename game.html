@@ -27,11 +27,12 @@
     .popup-close { background:transparent; border:none; color:var(--muted); font-size:1.14rem; cursor:pointer; padding:6px; border-radius:8px; }
     .popup-body { display:grid; gap:6px; font-size:.95rem; }
     .popup-countdown { font-weight:700; color:var(--green); }
+    .tiletris-link { display:inline-flex; align-items:center; justify-content:center; margin-top:6px; min-height:40px; padding:10px 14px; border-radius:8px; background:var(--green); color:#08110c; text-decoration:none; font-weight:900; }
     .board { background:var(--panel); border:1px solid #2a2a2d; border-radius:10px; padding:10px; display:grid; gap:4px; }
     .row { display:grid; grid-template-columns:repeat(5,minmax(46px,1fr)); gap:6px; padding:6px; border-radius:8px; border:1px solid transparent; cursor:pointer; }
     .row.active { border-color:var(--active); background:rgba(47,116,255,.12); }
     .row.solved { outline:1px solid var(--green); }
-    .tile { aspect-ratio:1/1; border:2px solid var(--border); background:#101112; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.44rem; text-transform:uppercase; perspective: 1000px; }
+    .tile { aspect-ratio:1/1; border:2px solid var(--border); background:#101112; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.9rem; line-height:1; text-transform:uppercase; perspective: 1000px; }
     .tile.pending { border-color:#73757a; }
     .tile.flash { animation: pulse .16s ease-in-out 0s 1; }
     .tile.wave { animation: wave .42s ease-in-out both; }
@@ -73,7 +74,7 @@
     .k.wide { min-height:38px; font-size:1.056rem; padding:0 2px; }
     @media (max-width: 560px) {
       .wrap { width:96vw; margin-top:10px; padding-bottom:150px; }
-      .tile { font-size:1.26rem; }
+      .tile { font-size:1.58rem; }
       .row { gap:5px; padding:4px; }
       .keyboard-wrap { padding-inline:3px; }
       .kb { gap:3px; max-width:360px; }
@@ -104,6 +105,7 @@
       <div class="popup-body">
         <div class="popup-theme" style="font-weight:700;color:var(--muted);"></div>
         <div class="popup-message">Next 6 words in <span class="popup-countdown">0m</span>.</div>
+        <a class="tiletris-link" href="tiletris.html">Play Tiletris</a>
       </div>
     </div>
   </main>
@@ -246,12 +248,13 @@
             const letter = state.display[r].letters[c] || '';
             const isSubmittedRow = r === state.submittedRow;
             const hiddenKnownYellow = hasColor === 'present' && shouldHideKnownYellow(r, letter);
-            const hideClue = !isSubmittedRow && (hasColor === 'absent' || hiddenKnownYellow);
-            tile.textContent = lockedChar || (hideClue ? '' : letter);
+            const showAbsent = isSubmittedRow && (hasColor === 'absent' || hiddenKnownYellow);
+            const showPresent = hasColor === 'present' && !hiddenKnownYellow;
+            tile.textContent = lockedChar || (showAbsent || showPresent || hasColor === 'correct' ? letter : '');
             if (lockedChar) tile.classList.add('correct');
-            else if (isSubmittedRow && (hiddenKnownYellow || hasColor === 'absent')) tile.classList.add('absent');
-            else if (hideClue) tile.classList.add('absent');
-            else if (hasColor && hasColor !== 'absent') tile.classList.add(hasColor);
+            else if (showAbsent) tile.classList.add('absent');
+            else if (showPresent) tile.classList.add('present');
+            else if (hasColor === 'correct') tile.classList.add('correct');
             if (state.greenPhase.has(`${r}:${c}`) && r !== state.selectedRow && hasColor === 'present') {
               tile.classList.add('fade-correct');
               tile.style.animationDelay = (c * 120) + 'ms';
