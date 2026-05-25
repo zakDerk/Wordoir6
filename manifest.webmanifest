@@ -1,7 +1,7 @@
 {
-  "name": "Wordoir",
-  "short_name": "Wordoir",
-  "description": "A 6-row word puzzle game with linked letter hints.",
+  "name": "Falltris",
+  "short_name": "Falltris",
+  "description": "Falling words break when they match.",
   "start_url": "./tiletris.html",
   "scope": "./",
   "display": "standalone",
