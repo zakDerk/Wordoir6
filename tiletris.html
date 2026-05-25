@@ -15,14 +15,14 @@
     .topbar { width:min(560px,100%); min-height:44px; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid #26313a; }
     .topbar a { color:var(--text); text-decoration:none; font-weight:700; }
     .title { font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
-    main { width:min(560px,96vw); flex:1; min-height:0; padding:8px 0 126px; display:flex; flex-direction:column; align-items:center; }
-    .hud { width:min(420px,92vw,42dvh); display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; color:var(--muted); font-weight:700; }
+    main { width:min(560px,96vw); flex:1; min-height:0; padding:4px 0 134px; display:flex; flex-direction:column; align-items:center; }
+    .hud { width:min(420px,92vw,48dvh); display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; color:var(--muted); font-weight:700; }
     .score { color:var(--gold); }
-    .message { width:min(420px,92vw,42dvh); min-height:28px; display:flex; align-items:center; justify-content:center; font-weight:800; color:#121212; margin-bottom:6px; opacity:0; transition:opacity .18s ease; }
+    .message { width:min(420px,92vw,48dvh); min-height:22px; display:flex; align-items:center; justify-content:center; font-weight:800; color:#121212; margin-bottom:2px; opacity:0; transition:opacity .18s ease; }
     .message.show { opacity:1; background:#f2f2f2; border-radius:8px; padding:5px 8px; }
-    .board { width:min(420px,92vw,42dvh); display:grid; grid-template-rows:repeat(7,1fr); gap:4px; background:var(--panel); border:1px solid #2b3842; padding:7px; border-radius:10px; }
+    .board { width:min(420px,92vw,48dvh); display:grid; grid-template-rows:repeat(9,1fr); gap:4px; background:var(--panel); border:1px solid #2b3842; padding:7px; border-radius:10px; }
     .row { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; }
-    .cell { aspect-ratio:1/1; border:2px solid var(--grid); background:#2c343b; display:flex; align-items:center; justify-content:center; font-size:clamp(1.25rem,5.7vw,1.8rem); line-height:1; font-weight:900; color:var(--ink); text-transform:uppercase; transform-style:preserve-3d; }
+    .cell { aspect-ratio:1/1; border:2px solid var(--grid); background:#2c343b; display:flex; align-items:center; justify-content:center; font-size:clamp(1.56rem,7.1vw,2.25rem); line-height:1; font-weight:900; color:var(--ink); text-transform:uppercase; transform-style:preserve-3d; }
     .input-row .cell { border-color:var(--accent); background:#101b17; color:var(--text); }
     .tile { background:var(--tile); border-color:#d9dfd5; }
     .falling { background:#dcefff; border-color:#89b9e3; }
@@ -56,11 +56,11 @@
     @keyframes flipClear { 0% { transform:rotateX(0); opacity:1; } 100% { transform:rotateX(90deg); opacity:0; } }
     @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-8px); } 75% { transform:translateX(8px); } }
     @media (max-width:560px) {
-      main { width:96vw; padding-top:6px; padding-bottom:118px; }
-      .hud, .message, .board { width:min(94vw,40dvh); }
+      main { width:96vw; padding-top:2px; padding-bottom:118px; }
+      .hud, .message, .board { width:min(94vw,46dvh); }
       .board { gap:3px; padding:6px; }
       .row { gap:3px; }
-      .cell { font-size:clamp(1.15rem,5.5vw,1.5rem); }
+      .cell { font-size:clamp(1.44rem,6.9vw,1.88rem); }
       button { min-height:34px; font-size:.84rem; }
       .wide { font-size:.62rem; }
     }
@@ -75,6 +75,7 @@
   <main>
     <div class="hud">
       <span id="periodInfo">Live</span>
+      <span id="timer" style="color:var(--warn); font-variant-numeric: tabular-nums; font-weight:900;">45s</span>
       <span class="score">Score: <strong id="score">0</strong></span>
     </div>
     <div id="message" class="message" aria-live="polite"></div>
@@ -105,7 +106,7 @@ Letters shared across rows appear when your guess contains them.</p>
   </div>
   <script src="valid-guesses.js"></script>
   <script>
-    const ROWS = 7;
+    const ROWS = 9;
     const COLS = 5;
     const FALL_MS = 105;
     const GRAVITY_MS = 70;
@@ -113,12 +114,20 @@ Letters shared across rows appear when your guess contains them.</p>
     const LEADERBOARD_KEY = 'tiletrisLeaderboardV1';
     const LOCK_PREFIX = 'tiletrisLostPeriodV1:';
     const GAME_TIME_ZONE = 'America/New_York';
+    const penaltyPool = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+    let penaltyLength = 1, timeLeft = 45, timerInterval;
+
     const shortWords = new Set([
       'a','i','am','an','as','at','be','by','do','go','he','if','in','is','it','me','my','no','of','on','or','ox','so','to','up','us','we',
       'add','age','air','and','ant','any','ape','are','arm','art','ash','ask','bad','bag','bar','bat','bed','bee','big','bit','box','boy','bus','but','can','car','cat','cow','cup','day','did','dog','dry','ear','eat','egg','end','far','fat','few','fit','fly','for','fox','fun','get','got','had','has','hat','her','him','his','hot','how','ice','ill','ink','its','jam','job','joy','key','leg','let','lie','log','lot','low','man','map','men','new','not','now','odd','off','old','one','our','out','own','pen','pet','pie','pig','pin','red','run','sad','say','sea','see','set','she','sit','sky','son','sun','tea','the','tie','too','top','toy','try','two','use','war','was','way','who','why','win','yes','yet','you',
-      'able','also','area','away','back','ball','band','bank','base','bear','beat','been','best','bird','blue','boat','body','book','both','call','came','card','care','case','city','club','cold','come','cost','dark','data','dead','deal','deep','does','done','door','down','draw','drop','each','east','easy','even','ever','face','fact','fall','farm','fast','feel','felt','file','fill','find','fine','fire','five','food','foot','form','four','free','from','full','game','gave','girl','give','goes','gold','gone','good','gray','grew','grow','half','hand','hard','have','head','hear','heat','held','help','here','high','hold','home','hope','hour','idea','into','jump','just','keep','kind','king','knew','know','land','last','late','lead','left','less','life','like','line','list','live','long','look','made','make','many','mark','mean','mind','miss','more','most','move','much','must','name','near','need','next','nice','note','once','only','open','over','page','part','pass','past','pick','plan','play','poor','pull','push','read','real','rest','rich','ride','road','rock','room','rule','same','save','saw','says','seat','seem','seen','self','send','ship','shop','show','side','sing','site','slow','small','snow','some','song','soon','sort','star','stay','step','stop','such','sure','take','talk','team','tell','than','that','them','then','they','thin','this','time','told','took','town','tree','true','turn','type','unit','upon','very','view','wait','walk','wall','want','warm','week','well','went','were','west','what','when','wide','wife','wild','will','wind','wire','with','word','work','yard','year','your'
+      'able','acid','aged','ages','also','area','army','away','baby','back','ball','band','bank','base','bear','beat','been','bell','belt','best','bill','bird','blue','boat','body','bond','book','born','both','bulk','burn','bush','call','came','camp','card','care','case','cash','cast','cell','chat','chip','city','clay','clip','club','coat','code','cold','come','cook','cool','copy','cost','crew','crop','dark','data','date','dead','deal','dean','dear','debt','deep','desk','dial','diet','disc','disk','does','done','door','dose','down','draw','drop','drug','drum','dual','duke','dust','duty','each','earl','earn','east','easy','edge','else','even','ever','evil','exam','exit','face','fact','fail','fair','fall','farm','fast','fate','fear','feed','feel','feet','fell','felt','file','fill','film','find','fine','fire','firm','fish','five','flat','flow','food','foot','ford','form','fort','four','free','from','fuel','full','fund','gain','game','gate','gave','gear','gene','gift','girl','give','glad','goal','goes','gold','golf','gone','good','gray','grew','grey','grow','gulf','hair','half','hall','hand','hang','hard','harm','hate','have','head','hear','heat','held','hell','help','here','hero','high','hill','hire','hold','hole','holy','home','hope','host','hour','huge','hung','hunt','hurt','idea','inch','into','iron','item','jack','join','jump','jury','just','keen','keep','kent','kept','kick','kill','kind','king','knee','knew','know','lack','lady','laid','lake','land','lane','last','late','lead','left','less','life','lift','like','line','link','list','live','load','loan','lock','logo','long','look','lord','lose','loss','lost','loud','love','luck','made','mail','main','make','male','many','mark','mass','math','meal','mean','meat','meet','menu','mere','mike','mile','milk','mill','mind','mine','miss','mode','mood','moon','more','most','move','much','must','name','navy','near','neck','need','news','next','nice','nine','node','none','nose','note','okay','once','only','onto','open','oral','over','pace','pack','page','paid','pain','pair','palm','park','part','pass','past','path','peak','pick','pile','pink','pipe','plan','play','plot','plug','plus','poll','pool','poor','port','post','pull','pure','push','race','rail','rain','rank','rare','rate','read','real','rear','rely','rent','rest','rice','rich','ride','ring','rise','risk','road','rock','role','roll','roof','room','root','rose','rout','rule','rush','ruth','safe','said','sake','sale','salt','same','sand','save','seat','seed','seek','seem','seen','self','sell','send','sent','ship','shop','shot','show','shut','sick','side','sign','site','size','skin','slip','slow','snow','soft','soil','sold','sole','some','song','soon','sort','soul','spot','star','stay','step','stop','such','suit','sure','take','tale','talk','tall','tank','tape','task','team','tear','tell','tent','term','test','than','that','them','then','they','thin','this','thou','thus','till','time','tiny','told','toll','tone','tony','took','tool','tour','town','tree','trip','true','tune','turn','twin','type','unit','upon','used','user','vary','vast','very','vice','view','vote','wait','wake','walk','wall','want','ward','warm','wash','wave','ways','weak','wear','week','well','went','were','west','what','when','whom','wide','wife','wild','will','wind','wine','wing','wire','wise','wish','with','wood','word','work','yard','year','your','zero','zone'
     ]);
     const validWords = new Set([...shortWords, ...(window.WORDLE_ALLOWED_GUESSES || [])]);
+
+    validWords.forEach(w => {
+      if (w.length >= 1 && w.length <= 5) penaltyPool[w.length].push(w);
+    });
+
     const boardEl = document.getElementById('board');
     const messageEl = document.getElementById('message');
     const scoreEl = document.getElementById('score');
@@ -171,18 +180,19 @@ Letters shared across rows appear when your guess contains them.</p>
     }
     function saveRun() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        board, input, score, usedWords: [...usedWords], gameOver, runPeriodId
+        board, input, score, usedWords: [...usedWords], gameOver, runPeriodId, penaltyLength
       }));
     }
     function loadRun() {
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-        if (!saved || !Array.isArray(saved.board)) return false;
+        if (!saved || !Array.isArray(saved.board) || saved.board.length !== ROWS) return false;
         board = saved.board;
         input = saved.input || [];
         score = saved.score || 0;
         usedWords = new Set(saved.usedWords || []);
         gameOver = !!saved.gameOver;
+        penaltyLength = saved.penaltyLength || 1;
         runPeriodId = saved.runPeriodId || currentPeriodId();
         busy = false;
         if (gameOver) boardEl.classList.add('over');
@@ -233,6 +243,57 @@ Letters shared across rows appear when your guess contains them.</p>
       clearTimeout(messageTimer);
       messageTimer = setTimeout(() => messageEl.classList.remove('show'), 1500);
     }
+
+    function resetTimer() {
+      timeLeft = 45;
+      const el = document.getElementById('timer');
+      if (el) el.textContent = timeLeft + 's';
+    }
+
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (gameOver || busy) return;
+        if (input.length === 0) {
+          timeLeft--;
+          if (timeLeft <= 0) applyPenalty();
+          const el = document.getElementById('timer');
+          if (el) el.textContent = timeLeft + 's';
+        }
+      }, 1000);
+    }
+
+    async function applyPenalty() {
+      if (gameOver || busy) return;
+      let word = '';
+      while (penaltyLength <= 5) {
+        if (penaltyPool[penaltyLength].length > 0) {
+          const idx = Math.floor(Math.random() * penaltyPool[penaltyLength].length);
+          word = penaltyPool[penaltyLength].splice(idx, 1)[0].toUpperCase();
+          break;
+        }
+        penaltyLength++;
+      }
+      if (!word) return resetTimer();
+      if (board[1].some(c => c)) return endGame();
+
+      // Shift existing tiles up by one row
+      for (let r = 1; r < ROWS - 1; r++) {
+        board[r] = [...board[r + 1]];
+      }
+      board[ROWS - 1] = Array.from({ length: COLS }, () => null);
+
+      // Place penalty word at bottom
+      const startCol = Math.floor((COLS - word.length) / 2);
+      for (let i = 0; i < word.length; i++) {
+        board[ROWS - 1][startCol + i] = { letter: word[i], state: 'idle' };
+      }
+      showMessage('Inactivity penalty: ' + word);
+      render();
+      saveRun();
+      resetTimer();
+    }
+
     function render(falling = null, clearSet = new Set()) {
       const fallingCells = Array.isArray(falling) ? falling : (falling ? [falling] : []);
       boardEl.innerHTML = '';
@@ -282,8 +343,18 @@ Letters shared across rows appear when your guess contains them.</p>
       if (busy || gameOver) return;
       const word = input.join('').toLowerCase();
       if (!word) return showMessage('Type a word.');
-      if (!validWord(word)) return showMessage('Not a word.');
-      if (usedWords.has(word)) return showMessage('Already used.');
+      if (!validWord(word)) {
+        showMessage('Not a word.');
+        input = []; // Clear input to resume countdown
+        render();
+        return;
+      }
+      if (usedWords.has(word)) {
+        showMessage('Already used.');
+        input = []; // Clear input to resume countdown
+        render();
+        return;
+      }
       const letters = Array.from({ length: COLS }, (_, col) => input[col] || '');
       if (!canEnter(letters)) return endGame();
       busy = true;
@@ -294,6 +365,7 @@ Letters shared across rows appear when your guess contains them.</p>
       await clearMatches(landedCells);
       if (hasReachedTop()) return endGame();
       busy = false;
+      resetTimer();
       render();
       saveRun();
     }
@@ -401,13 +473,16 @@ Letters shared across rows appear when your guess contains them.</p>
       usedWords = new Set();
       busy = false;
       gameOver = false;
+      penaltyLength = 1;
       runPeriodId = currentPeriodId();
       boardEl.classList.remove('shake', 'over');
       gameOverModalEl.classList.add('hidden');
+      resetTimer();
       render();
       saveRun();
     }
     function startGame() {
+      startTimer();
       if (isPeriodLocked()) {
         if (loadRun() && runPeriodId !== currentPeriodId()) {
           startNewRun();
@@ -416,6 +491,7 @@ Letters shared across rows appear when your guess contains them.</p>
         board = emptyBoard();
         input = [];
         score = 0;
+        penaltyLength = 1;
         usedWords = new Set();
         busy = false;
         gameOver = true;
