@@ -16,11 +16,11 @@
     .topbar a { color:var(--text); text-decoration:none; font-weight:700; }
     .title { font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
     main { width:min(560px,96vw); flex:1; min-height:0; padding:0 0 134px; display:flex; flex-direction:column; align-items:center; }
-    .hud { width:min(420px,92vw,38dvh); display:flex; justify-content:space-between; align-items:center; margin-bottom:0; color:var(--muted); font-weight:700; line-height:1; padding:2px 0; }
+    .hud { width:min(470px,98vw,42dvh); display:flex; justify-content:space-between; align-items:center; margin-bottom:0; color:var(--muted); font-weight:700; line-height:1; padding:2px 0; }
     .score { color:var(--gold); }
-    .message { width:min(420px,92vw,38dvh); min-height:14px; display:flex; align-items:center; justify-content:center; font-weight:800; color:#121212; margin-bottom:0; opacity:0; transition:opacity .18s ease; font-size:0.85rem; }
+    .message { width:min(470px,98vw,42dvh); min-height:14px; display:flex; align-items:center; justify-content:center; font-weight:800; color:#121212; margin-bottom:0; opacity:0; transition:opacity .18s ease; font-size:0.85rem; }
     .message.show { opacity:1; background:#f2f2f2; border-radius:8px; padding:5px 8px; }
-    .board { width:min(420px,92vw,38dvh); display:grid; grid-template-rows:repeat(8,1fr); gap:4px; background:var(--panel); border:1px solid #2b3842; padding:7px; border-radius:10px; }
+    .board { width:min(470px,98vw,42dvh); display:grid; grid-template-rows:repeat(8,1fr); gap:4px; background:var(--panel); border:1px solid #2b3842; padding:7px; border-radius:10px; }
     .row { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; }
     .cell { aspect-ratio:1/1; border:2px solid var(--grid); background:#2c343b; display:flex; align-items:center; justify-content:center; font-size:clamp(1.56rem,7.1vw,2.25rem); line-height:1; font-weight:900; color:var(--ink); text-transform:uppercase; transform-style:preserve-3d; }
     .input-row .cell { border-color:var(--accent); background:#101b17; color:var(--text); }
@@ -57,7 +57,7 @@
     @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-8px); } 75% { transform:translateX(8px); } }
     @media (max-width:560px) {
       main { width:96vw; padding-top:0; padding-bottom:118px; }
-      .hud, .message, .board { width:min(94vw,36dvh); }
+      .hud, .message, .board { width:min(98vw,40dvh); }
       .board { gap:3px; padding:6px; }
       .row { gap:3px; }
       .cell { font-size:clamp(1.44rem,6.9vw,1.88rem); }
