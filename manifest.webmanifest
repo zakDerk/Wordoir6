@@ -2,7 +2,7 @@
   "name": "Wordoir",
   "short_name": "Wordoir",
   "description": "A 6-row word puzzle game with linked letter hints.",
-  "start_url": "./game.html",
+  "start_url": "./tiletris.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
