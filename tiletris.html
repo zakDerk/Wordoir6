@@ -197,6 +197,19 @@ Letters shared across rows appear when your guess contains them.</p>
       osc.start(); osc.stop(audioCtx.currentTime + 0.25);
     }
 
+    function playWordClearSound() {
+      initAudio();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.5);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+    }
+
     function playBeepSound() {
       initAudio();
       const osc = audioCtx.createOscillator();
@@ -459,15 +472,21 @@ Letters shared across rows appear when your guess contains them.</p>
       const letters = Array.from({ length: COLS }, (_, col) => input[col] || '');
       if (!canEnter(letters)) return endGame();
       busy = true;
+
+      // Rule: If board is empty (start or after full clear), new word stays
+      const isBoardEmpty = board.slice(1).every(row => row.every(cell => cell === null));
+
       usedWords.add(word);
       input = [];
       const landedCells = await dropLetters(letters);
       render();
-      await clearMatches(landedCells);
 
-      let horizontalFound = true;
-      while (horizontalFound) {
-        horizontalFound = await clearHorizontalWords();
+      if (!isBoardEmpty) {
+        const matched = await clearMatches(landedCells);
+        // Only check horizontal words if vertical matching triggered dynamic changes
+        if (matched) {
+          while (await clearHorizontalWords());
+        }
       }
 
       if (hasReachedTop()) return endGame();
@@ -502,7 +521,11 @@ Letters shared across rows appear when your guess contains them.</p>
 
     async function clearHorizontalWords() {
       const matchKeys = new Set();
+      let totalTiles = 0;
       for (let r = 1; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (board[r][c]) totalTiles++;
+        }
         if (board[r].every(c => c)) {
           const wordStr = board[r].map(c => c.letter).join('').toLowerCase();
           if (validWords.has(wordStr)) {
@@ -511,6 +534,11 @@ Letters shared across rows appear when your guess contains them.</p>
         }
       }
       if (!matchKeys.size) return false;
+
+      // Prevent clearing if it would leave the board entirely empty (e.g. the first word)
+      if (matchKeys.size === totalTiles) {
+        return false;
+      }
 
       playMatchSound();
       render(null, new Set(), matchKeys);
@@ -546,7 +574,7 @@ Letters shared across rows appear when your guess contains them.</p>
           break;
         }
       }
-      if (!matchKeys.size) return;
+      if (!matchKeys.size) return false;
 
       playMatchSound();
 
@@ -568,6 +596,7 @@ Letters shared across rows appear when your guess contains them.</p>
       await applyGravity();
       showMessage('+' + (pairs === 1 ? 10 : pairs === 2 ? 25 : pairs * 15));
       saveRun();
+      return true;
     }
     function hasReachedTop() {
       return board[1].some(Boolean);
