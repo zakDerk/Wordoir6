@@ -54,6 +54,9 @@
     .locked { opacity:.45; pointer-events:none; }
     .game-over-tile { background:#b74343; border-color:#e36b6b; color:#fff; }
     @keyframes flipClear { 0% { transform:rotateX(0); opacity:1; } 100% { transform:rotateX(90deg); opacity:0; } }
+    .matched { background:var(--accent)!important; border-color:var(--accent)!important; color:var(--text)!important; transition:background .2s ease; }
+    @keyframes heartbeat { 0%, 100% { transform:scale(1); } 50% { transform:scale(1.3); } }
+    .timer-warn { animation:heartbeat 1s infinite; display:inline-block; }
     @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-8px); } 75% { transform:translateX(8px); } }
     @media (max-width:560px) {
       main { width:96vw; padding-top:0; padding-bottom:118px; }
@@ -108,8 +111,8 @@ Letters shared across rows appear when your guess contains them.</p>
   <script>
     const ROWS = 8;
     const COLS = 5;
-    const FALL_MS = 105;
-    const GRAVITY_MS = 70;
+    const FALL_MS = 180;
+    const GRAVITY_MS = 100;
     const STORAGE_KEY = 'tiletrisActiveRunV1';
     const LEADERBOARD_KEY = 'tiletrisLeaderboardV1';
     const LOCK_PREFIX = 'tiletrisLostPeriodV1:';
@@ -119,8 +122,8 @@ Letters shared across rows appear when your guess contains them.</p>
 
     const shortWords = new Set([
       'a','i','am','an','as','at','be','by','do','go','he','if','in','is','it','me','my','no','of','on','or','ox','so','to','up','us','we',
-      'add','age','air','and','ant','any','ape','are','arm','art','ash','ask','bad','bag','bar','bat','bed','bee','big','bit','box','boy','bus','but','can','car','cat','cow','cup','day','did','dog','dry','ear','eat','egg','end','far','fat','few','fit','fly','for','fox','fun','get','got','had','has','hat','her','him','his','hot','how','ice','ill','ink','its','jam','job','joy','key','leg','let','lie','log','lot','low','man','map','men','new','not','now','odd','off','old','one','our','out','own','pen','pet','pie','pig','pin','red','run','sad','say','sea','see','set','she','sit','sky','son','sun','tea','the','tie','too','top','toy','try','two','use','war','was','way','who','why','win','yes','yet','you',
-      'able','acid','aged','ages','also','area','army','away','baby','back','ball','band','bank','base','bear','beat','been','bell','belt','best','bill','bird','blue','boat','body','bond','book','born','both','bulk','burn','bush','call','came','camp','card','care','case','cash','cast','cell','chat','chip','city','clay','clip','club','coat','code','cold','come','cook','cool','copy','cost','crew','crop','dark','data','date','dead','deal','dean','dear','debt','deep','desk','dial','diet','disc','disk','does','done','door','dose','down','draw','drop','drug','drum','dual','duke','dust','duty','each','earl','earn','east','easy','edge','else','even','ever','evil','exam','exit','face','fact','fail','fair','fall','farm','fast','fate','fear','feed','feel','feet','fell','felt','file','fill','film','find','fine','fire','firm','fish','five','flat','flow','food','foot','ford','form','fort','four','free','from','fuel','full','fund','gain','game','gate','gave','gear','gene','gift','girl','give','glad','goal','goes','gold','golf','gone','good','gray','grew','grey','grow','gulf','hair','half','hall','hand','hang','hard','harm','hate','have','head','hear','heat','held','hell','help','here','hero','high','hill','hire','hold','hole','holy','home','hope','host','hour','huge','hung','hunt','hurt','idea','inch','into','iron','item','jack','join','jump','jury','just','keen','keep','kent','kept','kick','kill','kind','king','knee','knew','know','lack','lady','laid','lake','land','lane','last','late','lead','left','less','life','lift','like','line','link','list','live','load','loan','lock','logo','long','look','lord','lose','loss','lost','loud','love','luck','made','mail','main','make','male','many','mark','mass','math','meal','mean','meat','meet','menu','mere','mike','mile','milk','mill','mind','mine','miss','mode','mood','moon','more','most','move','much','must','name','navy','near','neck','need','news','next','nice','nine','node','none','nose','note','okay','once','only','onto','open','oral','over','pace','pack','page','paid','pain','pair','palm','park','part','pass','past','path','peak','pick','pile','pink','pipe','plan','play','plot','plug','plus','poll','pool','poor','port','post','pull','pure','push','race','rail','rain','rank','rare','rate','read','real','rear','rely','rent','rest','rice','rich','ride','ring','rise','risk','road','rock','role','roll','roof','room','root','rose','rout','rule','rush','ruth','safe','said','sake','sale','salt','same','sand','save','seat','seed','seek','seem','seen','self','sell','send','sent','ship','shop','shot','show','shut','sick','side','sign','site','size','skin','slip','slow','snow','soft','soil','sold','sole','some','song','soon','sort','soul','spot','star','stay','step','stop','such','suit','sure','take','tale','talk','tall','tank','tape','task','team','tear','tell','tent','term','test','than','that','them','then','they','thin','this','thou','thus','till','time','tiny','told','toll','tone','tony','took','tool','tour','town','tree','trip','true','tune','turn','twin','type','unit','upon','used','user','vary','vast','very','vice','view','vote','wait','wake','walk','wall','want','ward','warm','wash','wave','ways','weak','wear','week','well','went','were','west','what','when','whom','wide','wife','wild','will','wind','wine','wing','wire','wise','wish','with','wood','word','work','yard','year','your','zero','zone'
+      'abs','ace','act','add','ado','ads','aft','age','ago','aid','ail','aim','air','alb','ale','all','alp','amp','and','ant','any','ape','app','apt','arc','are','ark','arm','art','ash','ask','asp','ate','awe','awl','axe','aye','bad','bag','bah','bam','ban','bar','bat','bay','bed','bee','beg','bel','bet','bib','bid','big','bin','bio','bis','bit','biz','boa','bob','bod','bog','boo','bop','bot','bow','box','boy','bra','bud','bug','bum','bun','bur','bus','but','buy','bye','cab','cad','cam','can','cap','car','cat','caw','cee','cel','chi','cob','cod','cog','col','con','coo','cop','cor','cos','cot','cow','coy','cry','cub','cue','cum','cup','cur','cut','dab','dad','dag','dal','dam','dan','dap','day','deb','dee','def','dei','den','dev','dew','dey','dib','did','die','dig','dim','din','dip','dis','dit','doc','doe','dog','dol','don','doo','dop','dor','dot','dry','dub','dud','due','dug','duh','duo','dup','dye','ear','eat','ebb','eco','edh','eel','eek','egg','ego','eke','eld','elf','elk','ell','elm','els','emo','emu','end','eng','ens','eon','era','ere','erg','ern','err','ers','ess','eta','eve','ewe','eye','fab','fad','fag','fan','far','fas','fat','fax','fay','fed','fee','fen','fer','fes','fet','feu','few','fey','fez','fib','fie','fig','fil','fin','fir','fit','fix','fiz','flu','fly','fob','foe','fog','foh','fon','fop','for','fou','fox','foy','fro','fry','fub','fud','fug','fum','fun','fur','gab','gad','gag','gal','gam','gan','gap','gar','gas','gat','gay','ged','gee','gel','gem','gen','get','gey','ghi','gib','gid','gie','gig','gin','gip','git','gnu','goa','gob','god','goo','gor','got','gov','gox','goy','gub','gue','gul','gum','gun','guv','guy','gym','gyp','had','hae','hag','hah','haj','ham','hao','hap','has','hat','haw','hay','heb','hem','hen','hep','her','hes','het','hew','hex','hey','hic','hid','hie','him','hin','hip','his','hit','hmm','hob','hod','hoe','hog','hon','hop','hot','how','hoy','hub','hue','hug','huh','hui','hum','hun','hup','hut','hyp','ice','ich','ick','icy','ids','iff','ifs','igg','ill','imp','ink','inn','ins','ion','ire','irk','ism','its','ivy','jab','jag','jam','jar','jaw','jay','jee','jet','jeu','jew','jib','jig','jin','job','joe','jog','jot','joy','jug','jun','jus','jut','kab','kaes','kafs','kats','kays','keas','keds','kefs','kegs','kens','keps','keys','khis','kids','kifs','kins','kips','kirs','kits','koas','kobs','kois','kops','kors','kues','kyes','labs','lacs','lads','lags','lams','laps','lars','lats','lavs','laws','lays','leas','lees','legs','leis','leks','lets','leus','levs','lexs','leys','libs','lids','lies','lins','lips','lits','lobs','logs','loos','lops','lots','lows','loys','luds','lugs','lums','luvs','lyes','macs','mads','maes','mags','mams','mans','maps','mars','mats','maws','mays','meds','megs','mels','mems','mets','mews','mhos','mibs','mics','mids','migs','mils','mims','mirs','mixs','mizs','moas','mobs','mocs','mods','mogs','mols','moms','mons','moos','mops','mors','mots','mous','mows','muds','mugs','mums','muns','muts','muxs','mycs','nabs','naes','nags','nahs','nams','nans','naps','naws','nays','nebs','nees','negs','nets','news','nibs','nil','nim','nip','nit','nix','nob','nod','nog','noh','nom','non','noo','nor','nots','nows','nubs','nuns','nuts','oafs','oaks','oars','oats','obas','obes','obis','ocas','ochs','odas','odds','odes','offs','ofts','ohms','ohos','oils','okas','okes','olds','oles','ones','onos','oohs','oots','opes','opts','oras','orbs','orcs','ords','ores','orts','oses','ouds','ours','outs','ovas','owes','owls','owns','owts','oxos','oxys','pacs','pads','pahs','pals','pams','pans','paps','pars','pats','paws','paxs','pays','peas','pecs','peds','pees','pegs','pehs','pens','peps','pers','pets','pews','phis','phos','phts','pias','pics','pies','pigs','pins','pips','pits','pius','pixs','plys','poas','pods','pohs','pois','pols','poms','poos','pops','pots','pows','poxs','pros','prys','psis','pubs','puds','pugs','puls','puns','pups','purs','puts','pyas','pyes','pyxs','qats','quas','rads','rags','rahs','rais','rajs','rams','rans','raps','rats','raws','raxs','rays','rebs','recs','reds','rees','refs','regs','reis','rems','reps','rets','revs','rexs','rezs','rhos','rias','ribs','rids','rifs','rigs','rims','rins','rips','robs','rocs','rods','roes','roms','rots','rows','rubs','rues','rugs','rums','runs','ruts','ryas','ryes','sabs','sacs','sads','saes','sags','sais','sals','saps','sats','saus','savs','saws','saxs','says','seas','secs','seds','sees','segs','seis','sels','sens','sers','sets','sews','sexs','shas','shes','shhs','shos','shys','sibs','sics','sims','sinp','sins','sips','sirs','sits','sixs','skas','skis','skys','slys','sobs','sods','sols','sons','sops','sots','sous','sows','soys','spas','spys','sris','stys','subs','sues','suks','sums','suns','sups','suqs','syns','tabs','tads','taes','tags','tais','tajs','tams','tans','taos','taps','tars','tats','taus','tavs','taws','taxs','teas','teds','tees','tegs','tels','tens','tets','tews','thys','tics','ties','tils','tins','tips','tits','tixs','tsks','tubs','tugs','tui','tums','tuns','tups','tuts','tuxs','twas','twos','tygs','tyes','udos','ughs','ukes','ulus','umms','umps','unis','upos','urbs','urds','urns','urps','uses','utas','utes','vacs','vans','vars','vats','vaus','vavs','vaws','vees','vegs','vets','vexs','vias','vid','vies','vigs','vims','vins','viss','vlys','voes','vols','vows','voxs','vugs','vums','wabs','wadds','wads','waes','wags','wans','waps','wars','wats','waws','waxs','ways','webs','weds','wees','wens','wets','whas','whos','whys','wigs','wins','wiss','wits','wizs','woes','wogs','woks','wonps','wons','woos','wots','wows','wrys','wuds','wuts','xiss','yabs','yads','yaes','yag','yahs','yaks','yams','yans','yaps','yars','yaws','yays','yeas','yehs','yen','yep','yes','yet','yew','yid','yin','yip','yob','yod','yok','yom','yon','you','yow','yuk','yumps','yums','yups','zags','zaps','zaxs','zeds','zees','zeks','zels','zens','zigs','zins','zips','zits','zoas','zoos','zuzs','zzz',
+      'able','acid','aged','ages','also','area','army','away','baby','back','ball','band','bank','base','bear','beat','been','bell','belt','best','bill','bird','blue','boat','body','bond','book','born','both','bulk','burn','bush','call','came','camp','card','care','case','cash','cast','cell','chat','chip','city','clay','clip','club','coat','code','cold','come','cook','cool','copy','cost','crew','crop','dark','data','date','dead','deal','dean','dear','debt','deep','desk','dial','diet','disc','disk','does','done','door','dose','down','draw','drop','drug','drum','dual','duke','dust','duty','each','earl','earn','east','easy','edge','else','even','ever','evil','exam','exit','face','fact','fail','fair','fall','farm','fast','fate','fear','feed','feel','feet','fell','felt','file','fill','film','find','fine','fire','firm','fish','five','flat','flow','food','foot','ford','form','fort','four','free','from','fuel','full','fund','gain','game','gate','gave','gear','gene','gift','girl','give','glad','goal','goes','gold','golf','gone','good','gray','grew','grey','grow','gulf','hair','half','hall','hand','hang','hard','harm','hate','have','head','hear','heat','held','hell','help','here','hero','high','hill','hire','hold','hole','holy','home','hope','host','hour','huge','hung','hunt','hurt','idea','inch','into','iron','item','jack','join','jump','jury','just','keen','keep','kent','kept','kick','kill','kind','king','knee','knew','know','lack','lady','laid','lake','land','lane','last','late','lead','left','less','life','lift','like','line','link','list','live','load','loan','lock','logo','long','look','lord','lose','loss','lost','loud','love','luck','made','mail','main','make','male','many','mark','mass','math','meal','mean','meat','meet','menu','mere','mike','mile','milk','mill','mind','mine','miss','mode','mood','moon','more','most','move','much','must','name','navy','near','neck','need','news','next','nice','nine','node','none','nose','note','okay','once','only','onto','open','oral','over','pace','pack','page','paid','pain','pair','palm','park','part','pass','past','path','peak','pick','pile','pink','pipe','plan','play','plot','plug','plus','poll','pool','poor','port','post','pull','pure','push','race','rail','rain','rank','rare','rate','read','real','rear','rely','rent','rest','rice','rich','ride','ring','rise','risk','road','rock','role','roll','roof','room','root','rose','rout','rule','rush','ruth','safe','said','sake','sale','salt','same','sand','save','seat','seed','seek','seem','seen','self','sell','send','sent','ship','shop','shot','show','shut','sick','side','sign','site','size','skin','slip','slow','snow','soft','soil','sold','sole','some','song','soon','sort','soul','spot','star','stay','step','stop','such','suit','sure','take','tale','talk','tall','tank','tape','task','team','tear','tell','tent','term','test','than','that','them','then','they','thin','this','thou','thus','till','time','tiny','told','toll','tone','tony','took','tool','tour','town','tree','trip','true','tune','turn','twin','type','unit','upon','used','user','vary','vast','very','vice','view','vote','wait','wake','walk','wall','want','ward','warm','wash','wave','ways','weak','wear','week','well','went','were','west','what','when','whom','wide','wife','wild','will','wind','wine','wing','wire','wise','wish','with','wood','word','work','yard','year','your','zero','zone','aces','acts','adds','ages','aids','ails','aims','airs','ales','alls','alps','amps','ants','apes','apps','arcs','arks','arms','arts','asks','asps','aves','awes','awls','axes','ayes','bags','bans','bars','bats','bays','beds','bees','begs','bels','bets','bibs','bids','bins','bios','bits','boas','bobs','bods','bogs','boos','bops','bots','bows','boys','bras','buds','bugs','bums','buns','burs','buys','byes','cabs','cads','cams','cans','caps','cars','cats','caws','cees','cels','chis','cobs','cods','cogs','cols','cons','coos','cops','cors','cots','cows','coys','cubs','cues','cups','curs','cuts','dabs','dads','dags','dals','dams','dans','daps','days','debs','dees','dens','devs','dews','deys','dibs','dies','digs','dims','dins','dips','dits','docs','does','dogs','dols','dons','doos','dops','dors','dots','dubs','duds','dues','dugs','duos','dups','dyes','ears','eats','ebbs','ecos','eels','eggs','egos','ekes','elds','elfs','elks','ells','elms','emus','ends','engs','eons','eras','ergs','erns','errs','etas','eves','ewes','eyes','fabs','fads','fags','fans','fars','fats','faxs','fays','feds','fees','fens','fers','fets','feus','fews','fibs','figs','fils','fins','firs','fits','fixs','flus','fobs','foes','fogs','fohs','fons','fops','fors','fous','foxs','foys','fros','frys','fubs','fuds','fugs','fums','funs','furs','gabs','gads','gags','gals','gams','gans','gaps','gars','gats','gays','geds','gees','gels','gems','gens','gets','ghis','gibs','gids','gies','gigs','gins','gips','gits','gnus','goas','gobs','gods','goos','gors','govs','goys','gubs','gues','guls','gums','guns','guvs','guys','gyms','gyps','hags','hahs','hajs','hams','haos','haps','hats','haws','hays','hebs','hems','hens','heps','hers','hets','hews','heys','hics','hids','hies','hims','hins','hips','hits','hobs','hods','hoes','hogs','hons','hops','hots','hows','hoys','hubs','hues','hugs','huhs','huis','hums','huns','hups','huts','hyps','ices','icks','ills','imps','inks','inns','ions','ires','irks','isms','itss','ivys','jabs','jags','jams','jars','jaws','jays','jees','jets','jeus','jews','jibs','jigs','jins','jobs','joes','jogs','jots','joys','jugs','juns','juts','kabs','kaes','kafs','kats','kays','keas','keds','kefs','kegs','kens','keps','keys','khis','kids','kifs','kins','kips','kirs','kits','koas','kobs','kois','kops','kors','kues','kyes','labs','lacs','lads','lags','lams','laps','lars','lats','lavs','laws','lays','leas','lees','legs','leis','leks','lets','leus','levs','lexs','leys','libs','lids','lies','lins','lips','lits','lobs','logs','loos','lops','lots','lows','loys','luds','lugs','lums','luvs','lyes','macs','mads','maes','mags','mams','mans','maps','mars','mats','maws','mays','meds','megs','mels','mems','mets','mews','mhos','mibs','mics','mids','migs','mils','mims','mirs','mixs','mizs','moas','mobs','mocs','mods','mogs','mols','moms','mons','moos','mops','mors','mots','mous','mows','muds','mugs','mums','muns','muts','muxs','mycs','nabs','naes','nags','nahs','nams','nans','naps','naws','nays','nebs','nees','negs','nets','news','nibs','nils','nims','nips','nits','nobs','nods','nogs','nohs','noms','nons','noos','nors','nots','nows','nubs','nuns','nuts','oafs','oaks','oars','oats','obas','obes','obis','ocas','ochs','odas','odds','odes','offs','ofts','ohms','ohos','oils','okas','okes','olds','oles','ones','onos','oohs','oots','opes','opts','oras','orbs','orcs','ords','ores','orts','oses','ouds','ours','outs','ovas','owes','owls','owns','owts','oxos','oxys','pacs','pads','pahs','pals','pams','pans','paps','pars','pats','paws','paxs','pays','peas','pecs','peds','pees','pegs','pehs','pens','peps','pers','pets','pews','phis','phos','phts','pias','pics','pies','pigs','pins','pips','pits','pius','pixs','plys','poas','pods','pohs','pois','pols','poms','poos','pops','pots','pows','poxs','pros','prys','psis','pubs','puds','pugs','puls','puns','pups','purs','puts','pyas','pyes','pyxs','qats','quas','rads','rags','rahs','rais','rajs','rams','rans','raps','rats','raws','raxs','rays','rebs','recs','reds','rees','refs','regs','reis','rems','reps','rets','revs','rexs','rezs','rhos','rias','ribs','rids','rifs','rigs','rims','rins','rips','robs','rocs','rods','roes','roms','rots','rows','rubs','rues','rugs','rums','runs','ruts','ryas','ryes','sabs','sacs','sads','saes','sags','sais','sals','saps','sats','saus','savs','saws','saxs','says','seas','secs','seds','sees','segs','seis','sels','sens','sers','sets','sews','sexs','shas','shes','shhs','shos','shys','sibs','sics','sims','sinp','sins','sips','sirs','sits','sixs','skas','skis','skys','slys','sobs','sods','sols','sons','sops','sots','sous','sows','soys','spas','spys','sris','stys','subs','sues','suks','sums','suns','sups','suqs','syns','tabs','tads','taes','tags','tais','tajs','tams','tans','taos','taps','tars','tats','taus','tavs','taws','taxs','teas','teds','tees','tegs','tels','tens','tets','tews','thys','tics','ties','tils','tins','tips','tits','tixs','tsks','tubs','tugs','tui','tums','tuns','tups','tuts','tuxs','twas','twos','tygs','tyes','udos','ughs','ukes','ulus','umms','umps','unis','upos','urbs','urds','urns','urps','uses','utas','utes','vacs','vans','vars','vats','vaus','vavs','vaws','vees','vegs','vets','vexs','vias','vid','vies','vigs','vigs','vims','vins','viss','vlys','voes','vols','vows','voxs','vugs','vums','wabs','wadds','wads','waes','wags','wans','waps','wars','wats','waws','waxs','ways','webs','weds','wees','wens','wets','whas','whos','whys','wigs','wins','wiss','wits','wizs','woes','wogs','woks','wonps','wons','woos','wots','wows','wrys','wuds','wuts','xiss','yabs','yads','yaes','yags','yahs','yaks','yams','yans','yaps','yars','yaws','yays','yeas','yehs','yen','yep','yes','yet','yew','yid','yin','yip','yob','yod','yok','yom','yon','you','yow','yuk','yumps','yums','yups','zags','zaps','zaxs','zeds','zees','zeks','zels','zens','zigs','zins','zips','zits','zoas','zoos','zuzs'
     ]);
     const validWords = new Set([...shortWords, ...(window.WORDLE_ALLOWED_GUESSES || [])]);
 
@@ -138,6 +141,89 @@ Letters shared across rows appear when your guess contains them.</p>
     const nextGameTimeEl = document.getElementById('nextGameTime');
     const periodInfoEl = document.getElementById('periodInfo');
     let board, input, score, usedWords, busy, gameOver, runPeriodId, messageTimer;
+
+    // --- Sound Synthesis Engine ---
+    let audioCtx = null;
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playTypeSound() {
+      initAudio();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+    }
+
+    function playFallSound() {
+      initAudio();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+    }
+
+    function playImpactSound() {
+      initAudio();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+    }
+
+    function playMatchSound() {
+      initAudio();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.25);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+    }
+
+    function playBeepSound() {
+      initAudio();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+    }
+
+    function playPenaltySound() {
+      initAudio();
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc1.type = 'triangle';
+      osc2.type = 'triangle';
+      osc1.frequency.setValueAtTime(110, audioCtx.currentTime);
+      osc2.frequency.setValueAtTime(116, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      osc1.connect(gain); osc2.connect(gain); gain.connect(audioCtx.destination);
+      osc1.start(); osc2.start();
+      osc1.stop(audioCtx.currentTime + 0.5); osc2.stop(audioCtx.currentTime + 0.5);
+    }
 
     function emptyBoard() {
       return Array.from({ length: ROWS }, () => Array.from({ length: COLS }, () => null));
@@ -247,18 +333,29 @@ Letters shared across rows appear when your guess contains them.</p>
     function resetTimer() {
       timeLeft = 45;
       const el = document.getElementById('timer');
-      if (el) el.textContent = timeLeft + 's';
+      if (el) {
+        el.textContent = timeLeft + 's';
+        el.classList.remove('timer-warn');
+      }
     }
 
     function startTimer() {
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(() => {
         if (gameOver || busy) return;
+        const el = document.getElementById('timer');
         if (input.length === 0) {
           timeLeft--;
           if (timeLeft <= 0) applyPenalty();
-          const el = document.getElementById('timer');
-          if (el) el.textContent = timeLeft + 's';
+          if (el) {
+            el.textContent = timeLeft + 's';
+            if (timeLeft <= 10 && timeLeft > 0) {
+              el.classList.add('timer-warn');
+              playBeepSound();
+            } else el.classList.remove('timer-warn');
+          }
+        } else {
+          if (el) el.classList.remove('timer-warn');
         }
       }, 1000);
     }
@@ -277,6 +374,8 @@ Letters shared across rows appear when your guess contains them.</p>
       if (!word) return resetTimer();
       if (board[1].some(c => c)) return endGame();
 
+      playPenaltySound();
+
       // Shift existing tiles up by one row
       for (let r = 1; r < ROWS - 1; r++) {
         board[r] = [...board[r + 1]];
@@ -294,7 +393,7 @@ Letters shared across rows appear when your guess contains them.</p>
       resetTimer();
     }
 
-    function render(falling = null, clearSet = new Set()) {
+    function render(falling = null, clearSet = new Set(), matchedSet = new Set()) {
       const fallingCells = Array.isArray(falling) ? falling : (falling ? [falling] : []);
       boardEl.innerHTML = '';
       for (let row = 0; row < ROWS; row++) {
@@ -312,6 +411,7 @@ Letters shared across rows appear when your guess contains them.</p>
             cell.classList.add(tile.state === 'falling' ? 'falling' : 'tile');
             if (gameOver) cell.classList.add('game-over-tile');
           }
+          if (matchedSet.has(row + ':' + col)) cell.classList.add('matched');
           if (clearSet.has(row + ':' + col)) cell.classList.add('clear');
           rowEl.appendChild(cell);
         }
@@ -328,6 +428,7 @@ Letters shared across rows appear when your guess contains them.</p>
     function addLetter(letter) {
       if (busy || gameOver) return;
       if (input.length < COLS) {
+        playTypeSound();
         input.push(letter);
         render();
         saveRun();
@@ -363,6 +464,12 @@ Letters shared across rows appear when your guess contains them.</p>
       const landedCells = await dropLetters(letters);
       render();
       await clearMatches(landedCells);
+
+      let horizontalFound = true;
+      while (horizontalFound) {
+        horizontalFound = await clearHorizontalWords();
+      }
+
       if (hasReachedTop()) return endGame();
       busy = false;
       resetTimer();
@@ -377,6 +484,7 @@ Letters shared across rows appear when your guess contains them.</p>
       while (true) {
         renderFloating(cells);
         await wait(FALL_MS);
+        playFallSound();
         const nextCells = cells.map(cell => {
           if (cell.row + 1 >= ROWS || board[cell.row + 1][cell.col]) return cell;
           return { ...cell, row: cell.row + 1 };
@@ -385,35 +493,77 @@ Letters shared across rows appear when your guess contains them.</p>
         cells = nextCells;
         if (!moved) break;
       }
+      playImpactSound();
       cells.forEach(cell => {
         board[cell.row][cell.col] = { letter: cell.letter, state: 'idle' };
       });
       return cells;
     }
+
+    async function clearHorizontalWords() {
+      const matchKeys = new Set();
+      for (let r = 1; r < ROWS; r++) {
+        if (board[r].every(c => c)) {
+          const wordStr = board[r].map(c => c.letter).join('').toLowerCase();
+          if (validWords.has(wordStr)) {
+            for (let c = 0; c < COLS; c++) matchKeys.add(r + ':' + c);
+          }
+        }
+      }
+      if (!matchKeys.size) return false;
+
+      playMatchSound();
+      render(null, new Set(), matchKeys);
+      await wait(600);
+      render(null, matchKeys, matchKeys); // Disappear
+      await wait(460);
+
+      matchKeys.forEach(key => {
+        const [row, col] = key.split(':').map(Number);
+        board[row][col] = null;
+      });
+      const wordsCount = matchKeys.size / COLS;
+      score += wordsCount * 50;
+      await applyGravity();
+      showMessage('Word clear! +' + (wordsCount * 50));
+      saveRun();
+      return true;
+    }
+
     function renderFloating(cells) {
       render(cells);
     }
     async function clearMatches(landedCells) {
-      const clearSet = new Set();
+      const matchKeys = new Set();
       for (const cell of landedCells) {
         for (let row = cell.row + 1; row < ROWS; row++) {
           const col = cell.col;
           if (!board[row][col]) continue;
           if (board[row][col].letter === cell.letter) {
-            clearSet.add(cell.row + ':' + col);
-            clearSet.add(row + ':' + col);
+            matchKeys.add(cell.row + ':' + col);
+            matchKeys.add(row + ':' + col);
           }
           break;
         }
       }
-      if (!clearSet.size) return;
-      render(null, clearSet);
+      if (!matchKeys.size) return;
+
+      playMatchSound();
+
+      // Phase 1: Turn them green first
+      render(null, new Set(), matchKeys);
+      await wait(600);
+
+      // Phase 2: Start the clear animation (flip)
+      render(null, matchKeys, matchKeys);
       await wait(460);
-      clearSet.forEach(key => {
+
+      // Phase 3: Remove from data
+      matchKeys.forEach(key => {
         const [row, col] = key.split(':').map(Number);
         board[row][col] = null;
       });
-      const pairs = clearSet.size / 2;
+      const pairs = matchKeys.size / 2;
       score += pairs === 1 ? 10 : pairs === 2 ? 25 : pairs * 15;
       await applyGravity();
       showMessage('+' + (pairs === 1 ? 10 : pairs === 2 ? 25 : pairs * 15));
@@ -483,8 +633,15 @@ Letters shared across rows appear when your guess contains them.</p>
     }
     function startGame() {
       startTimer();
-      if (isPeriodLocked()) {
-        if (loadRun() && runPeriodId !== currentPeriodId()) {
+      const currentSlot = currentPeriodId();
+      const hasRun = loadRun();
+
+      if (isPeriodLocked(currentSlot)) {
+        if (hasRun && runPeriodId === currentSlot) {
+          render();
+          return;
+        }
+        if (hasRun && runPeriodId !== currentSlot) {
           startNewRun();
           return;
         }
@@ -495,12 +652,12 @@ Letters shared across rows appear when your guess contains them.</p>
         usedWords = new Set();
         busy = false;
         gameOver = true;
-        runPeriodId = currentPeriodId();
+        runPeriodId = currentSlot;
         boardEl.classList.add('over');
         render();
         return;
       }
-      if (!loadRun() || gameOver) startNewRun();
+      if (!hasRun || gameOver) startNewRun();
       else {
         gameOverModalEl.classList.add('hidden');
         render();
